@@ -1,3 +1,5 @@
+const toRadian = x => x * Math.PI / 180.0;
+
 const transpose1d = A => {
     var m = Math.round(Math.sqrt(A.length));
     for(let i = 1; i < m; i++) {
@@ -8,3 +10,4 @@ const transpose1d = A => {
         }
     }
 }
+
