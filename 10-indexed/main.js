@@ -9,8 +9,6 @@ let scale = 0.0;
 const renderSceneCb = (now) => {
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  scale += 0.001;
-
   const world = [
     Math.cos(scale), -Math.sin(scale), 0.0, 0.0,
     Math.sin(scale), Math.cos(scale), 0.0, 0.0,
@@ -29,16 +27,22 @@ const renderSceneCb = (now) => {
   );
 
   gl.bindBuffer(gl.ARRAY_BUFFER, VBO);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, IBO);
 
-  var positionAttribLocation = gl.getAttribLocation(shaderProgram, "position");
-  gl.enableVertexAttribArray(positionAttribLocation);
-  gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 0, 0);
+  // position
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 6 * 4, 0);
 
-  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  // position
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 6 * 4, 3 * 4);
 
-  gl.disableVertexAttribArray(positionAttribLocation);
+  gl.drawElements(gl.TRIANGLES, 54, gl.UNSIGNED_INT, 0);
 
-  requestAnimationFrame(renderSceneCb);
+  gl.disableVertexAttribArray(0);
+  gl.disableVertexAttribArray(1);
+
+  //requestAnimationFrame(renderSceneCb);
 };
 
 class Vertex {
@@ -46,7 +50,7 @@ class Vertex {
   color = [];
 
   constructor(x, y) {
-    const pos = [x, y, 0.0];
+    this.pos = [x, y, 0.0];
 
     const red = Math.random();
     const green = Math.random();
@@ -90,10 +94,10 @@ const createVertexBuffer = () => {
   for (let i = 0; i < vertices.length; i++) {
     dataView.setFloat32(size * i, vertices[i].pos[0], true);
     dataView.setFloat32(size * i + 4, vertices[i].pos[1], true);
-    dataView.setFloat32(size * i + 8, vertices[i].pos[1], true);
+    dataView.setFloat32(size * i + 8, vertices[i].pos[2], true);
     dataView.setFloat32(size * i + 12, vertices[i].color[0], true);
     dataView.setFloat32(size * i + 16, vertices[i].color[1], true);
-    dataView.setFloat32(size * i + 20, vertices[i].color[1], true);
+    dataView.setFloat32(size * i + 20, vertices[i].color[2], true);
   }
 
   VBO = gl.createBuffer();
@@ -135,12 +139,12 @@ const createIndexBuffer = () => {
   const dataView = new DataView(buffer);
 
   for (let i = 0; i < indices.length; i++) {
-    dataView.setFloat32(size * i, indices[i], true);
+    dataView.setInt32(size * i, indices[i], true);
   }
 
-  glGenBuffers(1, IBO);
-  glBindBuffer(gl.ELEMENT_ARRAY_BUFFER, IBO);
-  glBufferData(gl.ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+  IBO = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, IBO);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, buffer, gl.STATIC_DRAW);
 
 }
 
@@ -150,7 +154,7 @@ const addShader = (shaderProgram, pShaderText, shaderType) => {
   gl.compileShader(shaderObj);
   if (!gl.getShaderParameter(shaderObj, gl.COMPILE_STATUS)) {
     var infoLog = gl.getShaderInfoLog(shaderObj);
-    var msg = `Shader failed to compile.  The error log is ${infoLog}`;
+    var msg = `Shader failed to compile.  The er,ror log is ${infoLog}`;
     +console.error(msg);
     return -1;
   }
@@ -159,10 +163,16 @@ const addShader = (shaderProgram, pShaderText, shaderType) => {
 
 const compileShaders = () => {
   shaderProgram = gl.createProgram();
+
   var vs = document.getElementById("vertex-shader").text;
   addShader(shaderProgram, vs, gl.VERTEX_SHADER);
+
   var fs = document.getElementById("fragment-shader").text;
   addShader(shaderProgram, fs, gl.FRAGMENT_SHADER);
+
+  gl.bindAttribLocation(shaderProgram, 0, 'inPosition');
+  gl.bindAttribLocation(shaderProgram, 1, 'inColor');
+
   gl.linkProgram(shaderProgram);
   if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
     var info = gl.getProgramInfoLog(shaderProgram);
@@ -192,6 +202,7 @@ const main = () => {
   gl.clearColor(0.0, 0.0, 0.0, 0.5);
 
   createVertexBuffer();
+  createIndexBuffer();
 
   compileShaders();
 

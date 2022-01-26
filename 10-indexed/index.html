@@ -10,7 +10,8 @@
       defer
     ></script>
     <script id="vertex-shader" type="x-shader/x-vertex">
-      attribute vec3 position;
+      attribute vec3 inPosition;
+      attribute vec3 inColor;
 
       uniform mat4 gWorld;
 
@@ -18,8 +19,8 @@
 
       void main()
       {
-        gl_Position = gWorld * vec4(position, 1.0);
-        vColor = vec4(clamp(position, 0.0, 1.0), 1.0);
+        gl_Position = gWorld * vec4(inPosition, 1.0);
+        vColor = vec4(inColor, 1.0);
       }
     </script>
     <script id="fragment-shader" type="x-shader/x-fragment">
