@@ -13,35 +13,43 @@ const renderSceneCb = (now) => {
 
   scale += 0.01;
 
-  const rotation = [
-    Math.cos(scale), 0.0, -Math.sin(scale), 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    Math.sin(scale), 0.0, Math.cos(scale), 0.0,
-    0.0, 0.0, 0.0, 1.0
-  ];
+  const rotation = math.matrix([
+    [Math.cos(scale), 0.0, -Math.sin(scale), 0.0],
+    [0.0, 1.0, 0.0, 0.0],
+    [Math.sin(scale), 0.0, Math.cos(scale), 0.0],
+    [0.0, 0.0, 0.0, 1.0]
+  ]);
 
   const translation = [
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0, 1.5,
-    0.0, 0.0, 0.0, 1.0
+    [1.0, 0.0, 0.0, 0.0],
+    [0.0, 1.0, 0.0, 0.0],
+    [0.0, 0.0, 1.0, 2.0],
+    [0.0, 0.0, 0.0, 1.0]
   ];
 
-  const FOV = 90.0;
-  const tanHalfFOV = Math.tan(toRadian(FOV / 2.0));
-  const f = 1 / tanHalfFOV;
+  const VFOV = 45.0;
+  const tanHalfFOV = Math.tan(toRadian(VFOV / 2.0));
+  const d = 1 / tanHalfFOV;
+
+  const ar = canvas.width / canvas.height;
+
+  const nearZ = 1.0;
+  const farZ = 100.0;
+
+  const zRange = nearZ - farZ;
+
+  const A = (-farZ - nearZ) / zRange;
+  const B = 2.0 * farZ * nearZ / zRange;
 
   const projection = [
-      f, 0.0, 0.0, 0.0,
-    0.0,   f, 0.0, 0.0,
-    0.0, 0.0, 1.0, 0.0,
-    0.0, 0.0, 1.0, 0.0
+    [d / ar, 0.0, 0.0, 0.0],
+    [0.0,    d,   0.0, 0.0],
+    [0.0,    0.0, A,   B  ],
+    [0.0,    0.0, 1.0, 0.0]
   ];
 
-  const finalMatrix = 
-    matrixProduct(projection, 
-      matrixProduct(translation, rotation, 4, 4, 4), 
-      4, 4, 4); 
+  const finalMatrix2d = math.multiply(projection, math.multiply(translation, rotation)); 
+  const finalMatrix = math.flatten(finalMatrix2d)._data;
 
   //printMatrix4d(finalMatrix);
 

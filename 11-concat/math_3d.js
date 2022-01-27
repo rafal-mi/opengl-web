@@ -34,5 +34,3 @@ const printMatrix4d = A => {
         console.log(row);
     }
 }
-
-const 
