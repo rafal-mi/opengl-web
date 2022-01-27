@@ -35,4 +35,3 @@ const printMatrix4d = A => {
     }
 }
 
-const 
