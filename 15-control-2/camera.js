@@ -107,7 +107,7 @@ class Camera {
     if(deltaX === 0) {
       if(x < MARGIN) {
         this._onLeftEdge = true;
-      } else if(x >= this._windoWidth - MARGIN) {
+      } else if(x >= this._windowWidth - MARGIN) {
         this._onRightEdge = true;
       }
     } else {
@@ -118,7 +118,7 @@ class Camera {
     if(deltaY === 0) {
       if(y < MARGIN) {
         this._onUpperEdge = true;
-      } else if(x >= this._windowHeight - MARGIN) {
+      } else if(y >= this._windowHeight - MARGIN) {
         this._onLowerEdge = true;
       }
     } else {

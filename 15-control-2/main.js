@@ -167,6 +167,40 @@ const compileShaders = () => {
   console.assert(gWVPLocation !== 0xffffffff);
 };
 
+const simulateMouse = horizontal => {
+  if(horizontal) {
+    setTimeout(() => { 
+      gameCamera.onMouse(635, 320);
+      setTimeout(() => {
+        gameCamera.onMouse(635, 330);
+      }, 3000);
+    }, 3000);
+
+    return;
+  }
+
+  const w2 = canvas.width / 2;
+  const h = canvas.height;
+  const positions = [
+    [w2, 5],
+    [w2 + 5, 5],
+    [w2, h - 5],
+    [w2 + 5, h - 5],
+    [w2, h / 2],
+    [w2 + 5, h / 2]
+  ];
+
+  let i = 0;
+  const interval = setInterval(() => {
+    gameCamera.onMouse(positions[i][0], positions[i][1]);
+    i++;
+    if(i >= positions.length) {
+      clearInterval(interval);
+    }
+  }, 3000);
+
+}
+
 const main = () => {
   canvas = document.getElementById("canvas");
   gl = canvas.getContext("webgl2");
@@ -196,11 +230,16 @@ const main = () => {
     gameCamera.onKeyboard(event);
   });
 
+  // Either...
+  //
   canvas.addEventListener('mousemove', event => {
     gameCamera.onMouse(event.offsetX, event.offsetY);
   });
+  //
 
-  // setTimeout(() => gameCamera.onMouse(318, 0), 3000);
+  // ...or
+  //
+  // simulateMouse(false);
 
 };
 
