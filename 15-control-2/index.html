@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Camera Control</title>
+    <meta charset="utf-8" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.1.0/math.js"
+      integrity="sha512-UvIACSDvB2RfwkjYTjYkuJq901Y6L4nZNoOHZMRBvSdIiIm3BFrtOdgjr5EZSPYR5cU/P6XUW6TN/578FuTysw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      attribute vec3 inPosition;
+      attribute vec3 inColor;
+
+      uniform mat4 gWVP;
+
+      varying lowp vec4 vColor;
+
+      void main()
+      {
+        gl_Position = gWVP * vec4(inPosition, 1.0);
+        vColor = vec4(inColor, 1.0);
+      }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      varying lowp vec4 vColor;
+
+      void main()
+      {
+          gl_FragColor = vColor;
+      }
+    </script>
+  </head>
+
+  <body>
+    <canvas id="canvas" width="640" height="640"></canvas>
+  </body>
+
+  <script type="text/javascript" src="math_3d.js" defer></script>
+  <script type="text/javascript" src="camera.js" defer></script>
+  <script type="text/javascript" src="world-transform.js" defer></script>
+  <script type="text/javascript" src="main.js" defer></script>
+</html>
