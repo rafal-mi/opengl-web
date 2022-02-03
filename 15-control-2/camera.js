@@ -1,15 +1,16 @@
-const MARGIN = 20;
-const EDGE_STEP = 0.01;
+const MARGIN = 30;
+const EDGE_STEP = 1.0;
 
 class Camera {
   #mousePosition = new Vector2i();
 
   constructor(windowWidth, windowHeight, position, target, up) {
-    this._windoWidth = windowWidth;
+    this._windowWidth = windowWidth;
     this._windowHeight = windowHeight;
     this._position = position !== undefined ? position : new Vector3f(0.0, 0.0, 0.0);
     this._target = target !== undefined ? target : new Vector3f(0.0, 0.0, 1.0);
     this._up = up !== undefined ? up : new Vector3f(0.0, 1.0, 0.0);
+    this._speed = 1.0;
 
     up.normalize();
 
@@ -42,6 +43,7 @@ class Camera {
     this._onLowerEdge = false;
     this._onLeftEdge = false;
     this._onRightEdge = false;
+
     this.#mousePosition.x = this._windowWidth / 2;
     this.#mousePosition.y = this._windowHeight / 2;
   }
@@ -94,13 +96,13 @@ class Camera {
 
   onMouse(x, y) {
     const deltaX = x - this.#mousePosition.x;
-    const deltaY = x - this.#mousePosition.y;
+    const deltaY = y - this.#mousePosition.y;
 
     this.#mousePosition.x = x;
     this.#mousePosition.y = y;
 
-    this._angleH = deltaX / 20.0;
-    this._angleV = deltaY / 50.0;
+    this._angleH += deltaX / 20.0;
+    this._angleV += deltaY / 50.0;
 
     if(deltaX === 0) {
       if(x < MARGIN) {
@@ -124,13 +126,62 @@ class Camera {
       this._onLowerEdge = false;
     }
 
-    update();
+    // this._onLeftEdge = false;
+    // this._onRightEdge = false;
+    // this._onUpperEdge = false;
+    // this._onLowerEdge = false;
+
+    this.update();
+  }
+
+  onRender() {
+    let shouldUpdate = false;
+
+    if(this._onLeftEdge) {
+      this._angleH -= EDGE_STEP;
+      shouldUpdate = true;
+    } else if(this._onRightEdge) {
+      this._angleH += EDGE_STEP;
+      shouldUpdate = true;
+    }
+
+    if(this._onUpperEdge) {
+      if(this._angleV > -90.0) {
+        this._angleV -= EDGE_STEP;
+        shouldUpdate = true;
+      }
+    } else if(this._onLowerEdge) {
+      if(this._angleV < 90.0) {
+        this._angleV += EDGE_STEP;
+        shouldUpdate = true;
+      }
+    }
+
+    if(shouldUpdate) {
+      this.update();
+    }
   }
 
   update() {
+    console.log('Updating Camera');
+
     const yAxis = new Vector3f(0.0, 1.0, 0.0);
 
+    // Rotate the view vector by the horizontal angle around the vertical axis
+    const view = new Vector3f(1.0, 0.0, 0.0);
+    view.rotate(this._angleH, yAxis);
+    view.normalize();
     
+    // Rotate the view vector by the vertical angle around the horizontal axis
+    const U = yAxis.cross(view);
+    U.normalize();
+    view.rotate(this._angleV, U);
+
+    this._target = view;
+    this._target.normalize();
+
+    this._up = this._target.cross(U);
+    this._up.normalize();
   }
 
   get matrix() {

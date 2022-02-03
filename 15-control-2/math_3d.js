@@ -1,5 +1,5 @@
 const toRadian = x => (x * Math.PI) / 180.0;
-const toDegree = x => (float)(((x) * 180.0 / Math.PI));
+const toDegree = x => x * 180.0 / Math.PI;
 
 class Vector2i {
   x = 0;
@@ -80,6 +80,16 @@ class Vector3f {
     v[1] /= length;
     v[2] /= length;
   }
+
+  rotate(angle, V) {
+    const rotationQ = new Quaternion(angle, V);
+    const conjugateQ = rotationQ.conjugate();
+    const W = rotationQ.multiplyByVector(this).multiply(conjugateQ);
+
+    this.x = W.x;
+    this.y = W.y;
+    this.z = W.z;
+  }
 }
 
 class PersProjInfo {
@@ -95,6 +105,69 @@ class PersProjInfo {
     this.height = height;
     this.zNear = zNear;
     this.zFar = zFar;
+  }
+}
+
+class Quaternion {
+  constructor() {
+    if(arguments.length === 2) {
+      this._angle = arguments[0];
+      this._V = arguments[1];
+
+      const halfAngleInRadians = toRadian(this._angle / 2);
+      const sineHalfAngle = Math.sin(halfAngleInRadians);
+      const cosHalfAngle = Math.cos(halfAngleInRadians);
+
+      const V = this._V;
+      this._x = V.x * sineHalfAngle;
+      this._y = V.y * sineHalfAngle;
+      this._z = V.z * sineHalfAngle;
+      this._w = cosHalfAngle;
+    } else {
+      this._x = arguments[0];
+      this._y = arguments[1];
+      this._z = arguments[2];
+      this._w = arguments[3];
+    }
+  }
+
+  get x() { return this._x }
+  get y() { return this._y }
+  get z() { return this._z }
+  get w() { return this._w }
+
+  normalize() {
+    const length = Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w);
+
+    this._x /= length;
+    this._y /= length;
+    this._z /= length;
+    this._w /= length;
+  }
+
+  conjugate() {
+    const ret = new Quaternion(-this._x, -this._y, -this._z, this._w);
+    return ret;
+  }
+
+  multiplyByVector(v) {
+    const w = -(this.x * v.x) - (this.y * v.y) - (this.z * v.z);
+    const x = (this.w * v.x) + (this.y * v.z) - (this.z * v.y);
+    const y = (this.w * v.y) + (this.z * v.x) - (this.x * v.z);
+    const z = (this.w * v.z) + (this.x * v.y) - (this.y * v.x);
+
+    const ret = new Quaternion(x, y, z, w);
+    return ret;
+  }
+
+  multiply(that) {
+    const w = (this.w * that.w) - (this.x * that.x) - (this.y * that.y) - (this.z * that.z);
+    const x = (this.x * that.w) + (this.w * that.x) + (this.y * that.z) - (this.z * that.y);
+    const y = (this.y * that.w) + (this.w * that.y) + (this.z * that.x) - (this.x * that.z);
+    const z = (this.z * that.w) + (this.w * that.z) + (this.x * that.y) - (this.y * that.x);
+
+    const ret = new Quaternion(x, y, z, w);
+    return ret;
   }
 }
 

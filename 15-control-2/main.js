@@ -4,7 +4,11 @@ let VB0 = 0;
 let IB0 = 0;
 let shaderProgram = null;
 let gWVPLocation = -1;
+
 let cubeWorldTransform = null;
+let cameraPos = new Vector3f(0.0, 0.0, -1.0);
+let cameraTarget = new Vector3f(0.0, 0.0, 1.0);
+let cameraUp = new Vector3f(0.0, 1.0, 0.0);
 let gameCamera = null;
 let yRotationAngle = 1.0;
 
@@ -17,6 +21,10 @@ const SIZE_OF_INT = 4;
 
 const renderSceneCb = (now) => {
   gl.clear(gl.COLOR_BUFFER_BIT);
+
+  gameCamera.onRender();
+
+  let yRotationAngle = 0.1;
 
   cubeWorldTransform.setPosition(0.0, 0.0, 2.0);
   cubeWorldTransform.rotate(0.0, yRotationAngle, 0.0);
@@ -50,7 +58,7 @@ const renderSceneCb = (now) => {
   gl.disableVertexAttribArray(1);
 
   requestAnimationFrame(renderSceneCb);
-  //setTimeout(() => requestAnimationFrame(renderSceneCb), 500);
+  // setTimeout(() => requestAnimationFrame(renderSceneCb), 3000);
 };
 
 class Vertex {
@@ -177,7 +185,7 @@ const main = () => {
   compileShaders();
 
   cubeWorldTransform = new WorldTrans();
-  gameCamera = new Camera();
+  gameCamera = new Camera(canvas.width, canvas.height, cameraPos, cameraTarget, cameraUp);
 
   persProjInfo = new PersProjInfo(FOV, canvas.width, canvas.height, zNear, zFar);
 
@@ -187,6 +195,12 @@ const main = () => {
     console.log(event);
     gameCamera.onKeyboard(event);
   });
+
+  canvas.addEventListener('mousemove', event => {
+    gameCamera.onMouse(event.offsetX, event.offsetY);
+  });
+
+  // setTimeout(() => gameCamera.onMouse(318, 0), 3000);
 
 };
 
